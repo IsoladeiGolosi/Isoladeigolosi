@@ -115,6 +115,12 @@
     #gestionale-pin-reale .a-total-box b{display:block;font-size:30px;font-weight:500;margin-top:7px}
     #gestionale-pin-reale .a-profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
     #gestionale-pin-reale .a-profile-info{display:grid;gap:12px}
+    #gestionale-pin-reale .a-personal-form{grid-column:1/-1}
+    #gestionale-pin-reale .a-personal-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    #gestionale-pin-reale .a-personal-fields .wide{grid-column:1/-1}
+    #gestionale-pin-reale .a-privacy-check{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid var(--a-line);border-radius:10px;background:var(--a-soft)}
+    #gestionale-pin-reale .a-privacy-check input{width:20px;height:20px;flex:0 0 auto;margin:1px 0 0}
+    #gestionale-pin-reale .a-privacy-check span{font-size:13px;line-height:1.4}
     #gestionale-pin-reale .a-info-row{display:flex;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--a-line)}
     #gestionale-pin-reale .a-info-row span{color:var(--a-muted)}
     #gestionale-pin-reale .a-save{border:0;border-radius:9px;background:var(--a-side);color:#fff;padding:11px 15px;min-height:44px;font-weight:500;margin-top:15px}
@@ -160,6 +166,8 @@
       #gestionale-pin-reale .a-overlay.open{display:block;position:absolute;inset:0;background:rgba(0,0,0,.38);z-index:2}
       #gestionale-pin-reale .a-menu{display:inline-flex}
       #gestionale-pin-reale .a-profile-grid{grid-template-columns:1fr}
+      #gestionale-pin-reale .a-personal-fields{grid-template-columns:1fr}
+      #gestionale-pin-reale .a-personal-fields .wide{grid-column:auto}
     }
     @media(max-width:560px){
       #gestionale-pin-reale .a-login{padding:14px;min-height:720px}
@@ -282,6 +290,21 @@
           <div class="a-head"><div><h2>Profilo personale</h2><p>Gestione dell’account e della sicurezza.</p></div></div>
           <div class="a-profile-grid">
             <div class="a-panel"><div class="a-panel-head"><h3>Dati utente</h3></div><div class="a-profile-info"><div class="a-info-row"><span>Nome</span><strong class="a-profile-name">Direttrice</strong></div><div class="a-info-row"><span>Ruolo</span><strong class="a-profile-role">Direttrice</strong></div><div class="a-info-row"><span>Permessi</span><strong class="a-profile-perms">Accesso completo</strong></div><div class="a-info-row"><span>Totale ore mensili<br><small>Novembre 2026 · aggiornato al 23</small></span><strong class="a-profile-hours">50:00</strong></div></div></div>
+            <form class="a-panel a-personal-form">
+              <div class="a-panel-head"><div><h3>Dati personali obbligatori</h3><p class="a-muted">I dati sono visibili solo all'utente autorizzato.</p></div><span class="a-chip">Obbligatori</span></div>
+              <div class="a-personal-fields">
+                <div class="a-field"><label for="a-first-name">Nome</label><input id="a-first-name" name="firstName" type="text" maxlength="80" autocomplete="given-name" required></div>
+                <div class="a-field"><label for="a-last-name">Cognome</label><input id="a-last-name" name="lastName" type="text" maxlength="80" autocomplete="family-name" required></div>
+                <div class="a-field"><label for="a-fiscal-code">Codice fiscale</label><input id="a-fiscal-code" name="fiscalCode" type="text" maxlength="16" autocapitalize="characters" autocomplete="off" required></div>
+                <div class="a-field"><label for="a-communication-code">Codice comunicazione</label><input id="a-communication-code" name="communicationCode" type="text" maxlength="100" autocomplete="off" required></div>
+                <div class="a-field"><label for="a-contract-type">Tipologia di contratto</label><select id="a-contract-type" name="contractType" required><option value="">Seleziona</option><option value="fisso">Fisso</option><option value="a_chiamata">A chiamata</option></select></div>
+                <div class="a-field"><label for="a-mobile-phone">Numero di cellulare</label><input id="a-mobile-phone" name="mobilePhone" type="tel" maxlength="20" autocomplete="tel" required></div>
+                <div class="a-field wide"><label for="a-profile-email">Email</label><input id="a-profile-email" name="email" type="email" maxlength="254" autocomplete="email" required></div>
+                <label class="a-privacy-check wide"><input id="a-privacy-accepted" name="privacyAccepted" type="checkbox" required><span>Ho letto l'informativa privacy e acconsento al trattamento dei dati personali per la gestione del rapporto di lavoro.</span></label>
+              </div>
+              <button type="submit" class="a-save">Salva dati personali</button>
+              <div class="a-message a-personal-message" role="status"></div>
+            </form>
             <form class="a-panel a-pin-form"><div class="a-panel-head"><h3>Sicurezza</h3></div><div class="a-field"><label for="a-current-pin">Codice attuale</label><input id="a-current-pin" class="a-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></div><div class="a-field"><label for="a-new-pin">Nuovo codice</label><input id="a-new-pin" class="a-pin" type="password" inputmode="numeric" maxlength="4" placeholder="4 cifre"></div><div class="a-field"><label for="a-confirm-pin">Conferma nuovo codice</label><input id="a-confirm-pin" class="a-pin" type="password" inputmode="numeric" maxlength="4" placeholder="4 cifre"></div><button type="submit" class="a-save">Aggiorna codice</button><div class="a-message" role="status"></div></form>
           </div>
         </section>
@@ -378,6 +401,25 @@
       }
       function setUser(name){currentUser=name;const [role,perms]=roleLabels[currentAuth?.role]||['Personale','Solo lettura'];root.querySelector('.a-user-name').textContent=name;root.querySelector('.a-user-role').textContent=role;root.querySelector('.a-role').textContent=role;root.querySelector('.a-greeting').textContent=name;root.querySelector('.a-profile-name').textContent=name;root.querySelector('.a-profile-role').textContent=role;root.querySelector('.a-profile-perms').textContent=perms;root.querySelector('.a-profile-hours').textContent=workedHours[name]||'—';root.querySelector('.a-avatar').textContent=name.charAt(0);root.querySelectorAll('.a-edit-only').forEach(el=>el.style.display=currentAuth?.role==='personale'?'none':'');renderResetRequests()}
       async function authRequest(payload){const response=await fetch(authUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});let data={};try{data=await response.json()}catch{}if(!response.ok)throw new Error(data.error||'Servizio momentaneamente non disponibile');return data}
+      const personalForm=root.querySelector('.a-personal-form');
+      async function loadProfile(){
+        if(!sessionToken)return;
+        const msg=root.querySelector('.a-personal-message');
+        try{
+          const {profile}=await authRequest({action:'profile',token:sessionToken});
+          personalForm.elements.firstName.value=profile.firstName||'';
+          personalForm.elements.lastName.value=profile.lastName||'';
+          personalForm.elements.fiscalCode.value=profile.fiscalCode||'';
+          personalForm.elements.communicationCode.value=profile.communicationCode||'';
+          personalForm.elements.contractType.value=profile.contractType||'';
+          personalForm.elements.mobilePhone.value=profile.mobilePhone||'';
+          personalForm.elements.email.value=profile.email||'';
+          personalForm.elements.privacyAccepted.checked=Boolean(profile.privacyAccepted);
+          const complete=profile.firstName&&profile.lastName&&profile.fiscalCode&&profile.communicationCode&&profile.contractType&&profile.mobilePhone&&profile.email&&profile.privacyAccepted;
+          msg.style.color=complete?'var(--a-green)':'var(--a-red)';
+          msg.textContent=complete?'Dati personali completi e salvati.':'Completa tutti i campi obbligatori e salva.';
+        }catch(error){msg.style.color='var(--a-red)';msg.textContent=error.message}
+      }
       const userSearch=root.querySelector('#a-user-search'),suggestions=root.querySelector('.a-suggestions'),loginPin=root.querySelector('#a-login-pin'),loginError=root.querySelector('.a-error');
       root.querySelectorAll('[data-login-mode]').forEach(button=>button.addEventListener('click',()=>{loginMode=button.dataset.loginMode;root.querySelectorAll('[data-login-mode]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));loginError.textContent='';userSearch.focus()}));
       function selectAccount(name){selectedUser=name;userSearch.value=name;suggestions.classList.remove('visible');loginError.textContent='';loginPin.focus()}
@@ -401,11 +443,27 @@
       root.querySelector('.a-back-login').addEventListener('click',()=>{clockScreen.classList.remove('visible');loginForm.style.display='block';clockUser='';loginError.textContent='';userSearch.focus()});
       renderClockLogs();
       const navButtons=root.querySelectorAll('[data-page]'),pages=root.querySelectorAll('[data-content]'),side=root.querySelector('.a-side'),overlay=root.querySelector('.a-overlay');
-      function showPage(name){navButtons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.page===name)));pages.forEach(p=>p.classList.toggle('active',p.dataset.content===name));side.classList.remove('open');overlay.classList.remove('open')}
+      function showPage(name){navButtons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.page===name)));pages.forEach(p=>p.classList.toggle('active',p.dataset.content===name));side.classList.remove('open');overlay.classList.remove('open');if(name==='profilo')loadProfile()}
       navButtons.forEach(b=>b.addEventListener('click',()=>showPage(b.dataset.page)));
       root.querySelectorAll('[data-open-notifications]').forEach(button=>button.addEventListener('click',()=>showPage('notifiche')));
       root.querySelector('.a-menu').addEventListener('click',()=>{side.classList.toggle('open');overlay.classList.toggle('open')});overlay.addEventListener('click',()=>{side.classList.remove('open');overlay.classList.remove('open')});
       root.querySelector('.a-logout').addEventListener('click',async()=>{if(sessionToken)authRequest({action:'logout',token:sessionToken}).catch(()=>{});sessionToken='';currentAuth=null;sessionStorage.removeItem('ig_staff_token');app.classList.remove('visible');login.style.display='grid';showPage('dashboard');loginError.textContent='';userSearch.focus()});
+      personalForm.addEventListener('submit',async e=>{
+        e.preventDefault();
+        const msg=root.querySelector('.a-personal-message'),data=new FormData(personalForm);
+        msg.style.color='var(--a-muted)';msg.textContent='Salvataggio in corso…';
+        try{
+          const result=await authRequest({
+            action:'update_profile',token:sessionToken,
+            firstName:data.get('firstName'),lastName:data.get('lastName'),
+            fiscalCode:data.get('fiscalCode'),communicationCode:data.get('communicationCode'),
+            contractType:data.get('contractType'),mobilePhone:data.get('mobilePhone'),
+            email:data.get('email'),privacyAccepted:data.get('privacyAccepted')==='on'
+          });
+          currentAuth.name=result.displayName;setUser(result.displayName);
+          msg.style.color='var(--a-green)';msg.textContent='Dati personali salvati correttamente.';
+        }catch(error){msg.style.color='var(--a-red)';msg.textContent=error.message}
+      });
       root.querySelector('.a-pin-form').addEventListener('submit',async e=>{e.preventDefault();const current=root.querySelector('#a-current-pin').value,next=root.querySelector('#a-new-pin').value,confirm=root.querySelector('#a-confirm-pin').value,msg=root.querySelector('.a-message');if(!/^\d{4}$/.test(next)||next==='0000'){msg.style.color='var(--a-red)';msg.textContent='Il nuovo PIN deve avere 4 cifre ed essere diverso da 0000.';return}if(next!==confirm){msg.style.color='var(--a-red)';msg.textContent='I due nuovi PIN non coincidono.';return}try{await authRequest({action:'change_pin',token:sessionToken,currentPin:current,newPin:next});currentAuth.mustChangePin=false;msg.style.color='var(--a-green)';msg.textContent='PIN aggiornato correttamente. Ora puoi usare tutte le funzioni.';e.target.reset()}catch(error){msg.style.color='var(--a-red)';msg.textContent=error.message}});
       function renderNotifications(){
         const open=notifications.filter(item=>item.status==='open').length;
