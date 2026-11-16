@@ -215,7 +215,7 @@
     <form class="a-login-panel">
       <div class="a-login-brand"><div class="a-logo">IG</div><div><h1>Isola dei Golosi</h1><span class="a-muted">Gestionale turni</span></div></div>
       <div class="a-mode-switch" aria-label="Modalità di accesso"><button type="button" data-login-mode="clock" aria-pressed="true">Timbratura</button><button type="button" data-login-mode="app" aria-pressed="false">Gestionale</button></div>
-      <div class="a-field a-user-search-wrap"><label for="a-user-search">Utente</label><input id="a-user-search" type="text" autocomplete="off" placeholder="Scrivi le prime 2 lettere"><div class="a-suggestions" role="listbox" aria-label="Utenti trovati"></div></div>
+      <div class="a-field"><label for="a-user-search">Nome completo</label><input id="a-user-search" type="text" autocomplete="name" placeholder="Inserisci nome e cognome"></div>
       <div class="a-field"><label for="a-login-pin">Codice personale</label><input id="a-login-pin" class="a-pin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="••••" autocomplete="off"></div>
       <div class="a-login-status">Accesso automatico dopo la quarta cifra</div>
       <div class="a-error" role="alert"></div>
@@ -278,18 +278,19 @@
         </section>
 
         <section class="a-page" data-content="modulo-chiamata">
-          <div class="a-head"><div><h2>Invio Modulo Chiamata</h2><p>Preparazione della Comunicazione Obbligatoria per lavoratori intermittenti.</p></div><span class="a-chip">In preparazione</span></div>
+          <div class="a-head"><div><h2>Invio Modulo Chiamata</h2><p>Comunicazione automatica delle prestazioni dei lavoratori intermittenti.</p></div><span class="a-chip">Invio automatico</span></div>
           <div class="a-panel">
-            <div class="a-panel-head"><div><h3>Comunicazione Obbligatoria Intermittenti</h3><p class="a-muted">Il modello base è stato acquisito. L'invio automatico sarà collegato alla chiamata che verrà definita.</p></div></div>
+            <div class="a-panel-head"><div><h3>Comunicazione Obbligatoria Intermittenti</h3><p class="a-muted">Il modulo viene compilato automaticamente quando Direttrice o Vice pubblicano i turni.</p></div><span class="a-status on">Regola attiva</span></div>
             <div class="a-call-grid">
-              <div class="a-call-card"><span>Lavoratore</span><strong>Selezione dal personale con contratto A chiamata</strong></div>
-              <div class="a-call-card"><span>Dati automatici</span><strong>Codice fiscale e codice comunicazione</strong></div>
-              <div class="a-call-card"><span>Prestazione</span><strong>Data di inizio e data di fine</strong></div>
-              <div class="a-call-card"><span>Operazione</span><strong>Nuova comunicazione oppure annullamento</strong></div>
+              <div class="a-call-card"><span>1 · Selezione</span><strong>Solo personale con contratto A chiamata e turno pubblicato</strong></div>
+              <div class="a-call-card"><span>2 · Compilazione</span><strong>Codice fiscale e codice comunicazione presi dal profilo</strong></div>
+              <div class="a-call-card"><span>3 · Prestazione</span><strong>Date ricavate dai turni futuri, per un ciclo massimo di 30 giorni</strong></div>
+              <div class="a-call-card"><span>4 · Variazioni</span><strong>Annullamento automatico se un turno comunicato viene eliminato</strong></div>
             </div>
-            <div class="a-call-actions"><button type="button" class="a-action" disabled>Prepara modulo</button><button type="button" class="a-action" disabled>Genera XML e invia</button></div>
-            <div class="a-message">Sezione pronta per il collegamento della procedura di invio.</div>
+            <div class="a-call-actions"><button type="button" class="a-action" disabled>Invio automatico alla pubblicazione</button></div>
+            <div class="a-message">Il collegamento tecnico dell'invio resta in attesa dei dati della chiamata. Nessun modulo partirà finché il collegamento non sarà completato e collaudato.</div>
           </div>
+          <div class="a-panel"><div class="a-panel-head"><h3>Registro comunicazioni</h3><span class="a-chip">Prossimamente</span></div><div class="a-empty-log">Qui compariranno data, lavoratore, periodo, esito dell'invio e ricevuta o errore.</div></div>
         </section>
 
         <section class="a-page" data-content="turni">
@@ -349,7 +350,7 @@
       root.querySelectorAll('i[data-lucide]').forEach(icon=>{icon.textContent=icons[icon.dataset.lucide]||'•'});
       const login=root.querySelector('.a-login'),app=root.querySelector('.a-app'),loginForm=root.querySelector('.a-login-panel');
       const authUrl='https://ujucemiwetfnxbwxjyfj.supabase.co/functions/v1/staff-auth';
-      let sessionToken='',currentAuth=null,searchTimer=0;
+      let sessionToken='',currentAuth=null;
       const pins={};
       const attempts={};
       const resetRequests=new Set();
@@ -444,13 +445,12 @@
           msg.textContent=complete?'Dati personali completi e salvati.':'Completa tutti i campi obbligatori e salva.';
         }catch(error){msg.style.color='var(--a-red)';msg.textContent=error.message}
       }
-      const userSearch=root.querySelector('#a-user-search'),suggestions=root.querySelector('.a-suggestions'),loginPin=root.querySelector('#a-login-pin'),loginError=root.querySelector('.a-error');
+      const userSearch=root.querySelector('#a-user-search'),loginPin=root.querySelector('#a-login-pin'),loginError=root.querySelector('.a-error');
       root.querySelectorAll('[data-login-mode]').forEach(button=>button.addEventListener('click',()=>{loginMode=button.dataset.loginMode;root.querySelectorAll('[data-login-mode]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));loginError.textContent='';userSearch.focus()}));
-      function selectAccount(name){selectedUser=name;userSearch.value=name;suggestions.classList.remove('visible');loginError.textContent='';loginPin.focus()}
-      async function searchAccounts(){selectedUser='';const query=userSearch.value.trim();if(query.length<2){suggestions.classList.remove('visible');suggestions.innerHTML='';return}try{const data=await authRequest({action:'search',prefix:query});const matches=data.names||[];loginError.textContent=matches.length?'':'Nessun nome trovato.';suggestions.innerHTML=matches.map(name=>`<button type="button" data-account="${name}" role="option">${name}</button>`).join('');suggestions.classList.toggle('visible',matches.length>0);suggestions.querySelectorAll('[data-account]').forEach(button=>button.addEventListener('click',()=>selectAccount(button.dataset.account)))}catch(error){suggestions.classList.remove('visible');loginError.textContent=error.message}}
-      userSearch.addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(searchAccounts,250)});
+      userSearch.addEventListener('input',()=>{selectedUser=userSearch.value.trim();loginError.textContent=''});
       async function attemptLogin(){
-        if(!selectedUser){loginError.textContent='Seleziona il tuo nome dai suggerimenti.';loginPin.value='';return}
+        selectedUser=userSearch.value.trim();
+        if(selectedUser.length<2){loginError.textContent='Inserisci il tuo nome completo.';loginPin.value='';return}
         loginError.textContent='Verifica accesso…';
         try{const data=await authRequest({action:'login',name:selectedUser,pin:loginPin.value});sessionToken=data.token;currentAuth=data.user;sessionStorage.setItem('ig_staff_token',sessionToken);const authenticated=data.user.name;loginPin.value='';userSearch.value='';selectedUser='';if(loginMode==='clock'){showClock(authenticated)}else{setUser(authenticated);login.style.display='none';app.classList.add('visible')}}catch(error){loginPin.value='';loginError.textContent=error.message}
       }
