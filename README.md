@@ -20,7 +20,7 @@ Non sono necessarie dipendenze o una fase di compilazione. Aprire `index.html` i
 Per provare l'anteprima:
 
 - scrivere le prime due lettere di `Eriona`, `Vice`, `Randagio` o `Personale`;
-- usare il PIN dimostrativo `0000`;
+- usare il PIN dimostrativo `**********`;
 - scegliere `Timbratura` oppure `Gestionale`.
 
 ## Stato del progetto
@@ -36,4 +36,4 @@ Non sono ancora collegati:
 - autorizzazioni definitive per Direttrice, Vice e personale;
 - registro di audit e approvazione delle correzioni.
 
-Il PIN `0000` è esclusivamente dimostrativo e non deve essere utilizzato in produzione.
+Il PIN `**********` è esclusivamente dimostrativo e non deve essere utilizzato in produzione.
