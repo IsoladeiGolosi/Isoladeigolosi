@@ -121,6 +121,12 @@
     #gestionale-pin-reale .a-privacy-check{display:flex;align-items:flex-start;gap:10px;padding:12px;border:1px solid var(--a-line);border-radius:10px;background:var(--a-soft)}
     #gestionale-pin-reale .a-privacy-check input{width:20px;height:20px;flex:0 0 auto;margin:1px 0 0}
     #gestionale-pin-reale .a-privacy-check span{font-size:13px;line-height:1.4}
+    #gestionale-pin-reale .a-call-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+    #gestionale-pin-reale .a-call-card{border:1px solid var(--a-line);border-radius:12px;padding:15px;background:var(--a-bg)}
+    #gestionale-pin-reale .a-call-card span{display:block;color:var(--a-muted);font-size:12px;margin-bottom:6px}
+    #gestionale-pin-reale .a-call-card strong{font-size:15px}
+    #gestionale-pin-reale .a-call-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    #gestionale-pin-reale .a-action:disabled{opacity:.55;cursor:not-allowed}
     #gestionale-pin-reale .a-info-row{display:flex;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid var(--a-line)}
     #gestionale-pin-reale .a-info-row span{color:var(--a-muted)}
     #gestionale-pin-reale .a-save{border:0;border-radius:9px;background:var(--a-side);color:#fff;padding:11px 15px;min-height:44px;font-weight:500;margin-top:15px}
@@ -168,6 +174,7 @@
       #gestionale-pin-reale .a-profile-grid{grid-template-columns:1fr}
       #gestionale-pin-reale .a-personal-fields{grid-template-columns:1fr}
       #gestionale-pin-reale .a-personal-fields .wide{grid-column:auto}
+      #gestionale-pin-reale .a-call-grid{grid-template-columns:1fr}
     }
     @media(max-width:560px){
       #gestionale-pin-reale .a-login{padding:14px;min-height:720px}
@@ -238,6 +245,7 @@
         <button type="button" aria-pressed="true" data-page="dashboard"><i data-lucide="layout-dashboard" aria-hidden="true"></i>Dashboard</button>
         <button type="button" aria-pressed="false" data-page="timbrature"><i data-lucide="scan-line" aria-hidden="true"></i>Timbrature</button>
         <button type="button" aria-pressed="false" data-page="notifiche"><i data-lucide="bell-ring" aria-hidden="true"></i>Notifiche</button>
+        <button type="button" class="a-manager-only" aria-pressed="false" data-page="modulo-chiamata"><i data-lucide="file-output" aria-hidden="true"></i>Invio Modulo Chiamata</button>
         <button type="button" aria-pressed="false" data-page="turni"><i data-lucide="calendar-days" aria-hidden="true"></i>Turni settimanali</button>
         <button type="button" aria-pressed="false" data-page="domani"><i data-lucide="calendar-arrow-down" aria-hidden="true"></i>Giorno successivo</button>
         <button type="button" aria-pressed="false" data-page="storico"><i data-lucide="history" aria-hidden="true"></i>Storico mensile</button>
@@ -267,6 +275,21 @@
           <div class="a-head"><div><h2>Notifiche del personale</h2><p>Avvisi push inviati a Direttrice e alla Vice.</p></div></div>
           <div class="a-notification-settings"><div class="a-setting"><div><strong>Notifiche push</strong><span>Simulate per Direttrice e Vice</span></div><span class="a-status on">Demo</span></div><div class="a-setting"><div><strong>Tolleranza ritardi</strong><span>Avviso dopo l’orario previsto</span></div><strong>5 minuti</strong></div></div>
           <div class="a-notification-list"></div>
+        </section>
+
+        <section class="a-page" data-content="modulo-chiamata">
+          <div class="a-head"><div><h2>Invio Modulo Chiamata</h2><p>Preparazione della Comunicazione Obbligatoria per lavoratori intermittenti.</p></div><span class="a-chip">In preparazione</span></div>
+          <div class="a-panel">
+            <div class="a-panel-head"><div><h3>Comunicazione Obbligatoria Intermittenti</h3><p class="a-muted">Il modello base è stato acquisito. L'invio automatico sarà collegato alla chiamata che verrà definita.</p></div></div>
+            <div class="a-call-grid">
+              <div class="a-call-card"><span>Lavoratore</span><strong>Selezione dal personale con contratto A chiamata</strong></div>
+              <div class="a-call-card"><span>Dati automatici</span><strong>Codice fiscale e codice comunicazione</strong></div>
+              <div class="a-call-card"><span>Prestazione</span><strong>Data di inizio e data di fine</strong></div>
+              <div class="a-call-card"><span>Operazione</span><strong>Nuova comunicazione oppure annullamento</strong></div>
+            </div>
+            <div class="a-call-actions"><button type="button" class="a-action" disabled>Prepara modulo</button><button type="button" class="a-action" disabled>Genera XML e invia</button></div>
+            <div class="a-message">Sezione pronta per il collegamento della procedura di invio.</div>
+          </div>
         </section>
 
         <section class="a-page" data-content="turni">
@@ -321,7 +344,7 @@
       const icons={
         'layout-dashboard':'▦','scan-line':'◉','bell-ring':'♢','calendar-days':'▤',
         'calendar-arrow-down':'→','history':'◷','user-round':'●','menu':'☰',
-        'bell':'♢','log-out':'↪','sheet':'▤','x':'×'
+        'bell':'♢','log-out':'↪','sheet':'▤','x':'×','file-output':'⇧'
       };
       root.querySelectorAll('i[data-lucide]').forEach(icon=>{icon.textContent=icons[icon.dataset.lucide]||'•'});
       const login=root.querySelector('.a-login'),app=root.querySelector('.a-app'),loginForm=root.querySelector('.a-login-panel');
@@ -400,7 +423,7 @@
         list.innerHTML=[...resetRequests].map(name=>`<div class="a-reset-request"><div><strong>${name}</strong><br><span>5 tentativi falliti · ripristino richiesto</span></div><button type="button" class="a-approve" data-reset-user="${name}">Approva reset</button></div>`).join('');
         list.querySelectorAll('[data-reset-user]').forEach(button=>button.addEventListener('click',()=>{const name=button.dataset.resetUser;pins[name]='0000';attempts[name]=0;resetRequests.delete(name);root.querySelector('.a-reset-message').textContent=`Accesso di ${name} ripristinato.`;renderResetRequests()}));
       }
-      function setUser(name){currentUser=name;const [role,perms]=roleLabels[currentAuth?.role]||['Personale','Solo lettura'];root.querySelector('.a-user-name').textContent=name;root.querySelector('.a-user-role').textContent=role;root.querySelector('.a-role').textContent=role;root.querySelector('.a-greeting').textContent=name;root.querySelector('.a-profile-name').textContent=name;root.querySelector('.a-profile-role').textContent=role;root.querySelector('.a-profile-perms').textContent=perms;root.querySelector('.a-profile-hours').textContent=workedHours[name]||'—';root.querySelector('.a-avatar').textContent=name.charAt(0);root.querySelectorAll('.a-edit-only').forEach(el=>el.style.display=currentAuth?.role==='personale'?'none':'');renderResetRequests()}
+      function setUser(name){currentUser=name;const [role,perms]=roleLabels[currentAuth?.role]||['Personale','Solo lettura'];root.querySelector('.a-user-name').textContent=name;root.querySelector('.a-user-role').textContent=role;root.querySelector('.a-role').textContent=role;root.querySelector('.a-greeting').textContent=name;root.querySelector('.a-profile-name').textContent=name;root.querySelector('.a-profile-role').textContent=role;root.querySelector('.a-profile-perms').textContent=perms;root.querySelector('.a-profile-hours').textContent=workedHours[name]||'—';root.querySelector('.a-avatar').textContent=name.charAt(0);const staff=currentAuth?.role==='personale';root.querySelectorAll('.a-edit-only,.a-manager-only').forEach(el=>el.style.display=staff?'none':'');renderResetRequests()}
       async function authRequest(payload){const response=await fetch(authUrl,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});let data={};try{data=await response.json()}catch{}if(!response.ok)throw new Error(data.error||'Servizio momentaneamente non disponibile');return data}
       const personalForm=root.querySelector('.a-personal-form');
       async function loadProfile(){
