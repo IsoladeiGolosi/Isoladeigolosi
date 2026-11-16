@@ -218,6 +218,7 @@
       <div class="a-clock-state">Nessuna entrata registrata oggi</div>
       <button type="button" class="a-punch">Check-in</button>
       <div class="a-sync-result" role="status"></div>
+      <button type="button" class="a-save a-open-profile">Profilo e cambio PIN</button>
       <button type="button" class="a-back-login">Torna alla selezione</button>
     </section>
   </section>
@@ -305,7 +306,7 @@
               <button type="submit" class="a-save">Salva dati personali</button>
               <div class="a-message a-personal-message" role="status"></div>
             </form>
-            <form class="a-panel a-pin-form"><div class="a-panel-head"><h3>Sicurezza</h3></div><div class="a-field"><label for="a-current-pin">Codice attuale</label><input id="a-current-pin" class="a-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></div><div class="a-field"><label for="a-new-pin">Nuovo codice</label><input id="a-new-pin" class="a-pin" type="password" inputmode="numeric" maxlength="4" placeholder="4 cifre"></div><div class="a-field"><label for="a-confirm-pin">Conferma nuovo codice</label><input id="a-confirm-pin" class="a-pin" type="password" inputmode="numeric" maxlength="4" placeholder="4 cifre"></div><button type="submit" class="a-save">Aggiorna codice</button><div class="a-message" role="status"></div></form>
+            <form class="a-panel a-pin-form"><div class="a-panel-head"><div><h3>Cambio PIN personale</h3><p class="a-muted">Scegli un PIN di 4 cifre diverso da 0000.</p></div></div><div class="a-field"><label for="a-current-pin">PIN attuale</label><input id="a-current-pin" class="a-pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••" required></div><div class="a-field"><label for="a-new-pin">Nuovo PIN</label><input id="a-new-pin" class="a-pin" type="password" inputmode="numeric" maxlength="4" placeholder="4 cifre" required></div><div class="a-field"><label for="a-confirm-pin">Conferma nuovo PIN</label><input id="a-confirm-pin" class="a-pin" type="password" inputmode="numeric" maxlength="4" placeholder="4 cifre" required></div><button type="submit" class="a-save">Cambia PIN personale</button><div class="a-message" role="status"></div></form>
           </div>
         </section>
       </div>
@@ -441,6 +442,7 @@
       function renderClockLogs(){const target=root.querySelector('.a-clock-log');if(!clockLogs.length){target.innerHTML='<div class="a-empty-log">Nessuna timbratura registrata in questa anteprima.</div>';return}target.innerHTML=`<table class="a-desktop-table"><thead><tr><th>Dipendente</th><th>Entrata</th><th>Uscita</th><th>Ore</th><th>Stato</th></tr></thead><tbody>${clockLogs.map(log=>`<tr><td><strong>${log.name}</strong></td><td>${log.in}</td><td>${log.out||'—'}</td><td>${log.hours||'Aperto'}</td><td><span class="a-status on">Salvato in demo</span></td></tr>`).join('')}</tbody></table><div class="a-mobile-list">${clockLogs.map(log=>`<div class="a-shift"><strong>${log.name}</strong><span class="a-shift-time">${log.in}–${log.out||'aperto'}</span><span class="a-status on">Demo locale</span></div>`).join('')}</div>`}
       punchButton.addEventListener('click',()=>{const now=currentTime();let state=clockStates[clockUser];if(!state){state={in:now,out:'',hours:''};clockStates[clockUser]=state;clockLogs.push({name:clockUser,...state})}else if(!state.out){state.out=now;state.hours=duration(state.in,state.out);const log=clockLogs.find(item=>item.name===clockUser&&!item.out);if(log){log.out=state.out;log.hours=state.hours}}root.querySelector('.a-sync-result').innerHTML=`Operazione registrata alle <strong>${now}</strong><br>Salvata nella sessione dimostrativa`;updateClockView();renderClockLogs()});
       root.querySelector('.a-back-login').addEventListener('click',()=>{clockScreen.classList.remove('visible');loginForm.style.display='block';clockUser='';loginError.textContent='';userSearch.focus()});
+      root.querySelector('.a-open-profile').addEventListener('click',()=>{const name=clockUser;clockScreen.classList.remove('visible');login.style.display='none';app.classList.add('visible');setUser(name);showPage('profilo')});
       renderClockLogs();
       const navButtons=root.querySelectorAll('[data-page]'),pages=root.querySelectorAll('[data-content]'),side=root.querySelector('.a-side'),overlay=root.querySelector('.a-overlay');
       function showPage(name){navButtons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.page===name)));pages.forEach(p=>p.classList.toggle('active',p.dataset.content===name));side.classList.remove('open');overlay.classList.remove('open');if(name==='profilo')loadProfile()}
