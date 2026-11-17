@@ -215,9 +215,9 @@
     <form class="a-login-panel">
       <div class="a-login-brand"><div class="a-logo">IG</div><div><h1>Isola dei Golosi</h1><span class="a-muted">Gestionale turni</span></div></div>
       <div class="a-mode-switch" aria-label="Modalità di accesso"><button type="button" data-login-mode="clock" aria-pressed="true">Timbratura</button><button type="button" data-login-mode="app" aria-pressed="false">Gestionale</button></div>
-      <div class="a-field"><label for="a-user-search">Nome completo</label><input id="a-user-search" type="text" autocomplete="name" placeholder="Inserisci nome e cognome"></div>
+      <div class="a-field a-user-search-wrap"><label for="a-user-search">Nome</label><input id="a-user-search" type="text" autocomplete="off" placeholder="Scrivi almeno 3 lettere"><div class="a-suggestions" role="listbox" aria-label="Nomi trovati"></div></div>
       <div class="a-field"><label for="a-login-pin">Codice personale</label><input id="a-login-pin" class="a-pin" type="password" inputmode="numeric" maxlength="4" pattern="[0-9]{4}" placeholder="••••" autocomplete="off"></div>
-      <div class="a-login-status">Accesso automatico dopo la quarta cifra</div>
+      <div class="a-login-status">Inserisci 3 lettere e il PIN personale</div>
       <div class="a-error" role="alert"></div>
     </form>
     <section class="a-clock-screen" aria-label="Timbratura personale">
@@ -350,7 +350,7 @@
       root.querySelectorAll('i[data-lucide]').forEach(icon=>{icon.textContent=icons[icon.dataset.lucide]||'•'});
       const login=root.querySelector('.a-login'),app=root.querySelector('.a-app'),loginForm=root.querySelector('.a-login-panel');
       const authUrl='https://ujucemiwetfnxbwxjyfj.supabase.co/functions/v1/staff-auth';
-      let sessionToken='',currentAuth=null;
+      let sessionToken='',currentAuth=null,searchTimer=0;
       const pins={};
       const attempts={};
       const resetRequests=new Set();
@@ -445,17 +445,33 @@
           msg.textContent=complete?'Dati personali completi e salvati.':'Completa tutti i campi obbligatori e salva.';
         }catch(error){msg.style.color='var(--a-red)';msg.textContent=error.message}
       }
-      const userSearch=root.querySelector('#a-user-search'),loginPin=root.querySelector('#a-login-pin'),loginError=root.querySelector('.a-error');
+      const userSearch=root.querySelector('#a-user-search'),suggestions=root.querySelector('.a-suggestions'),loginPin=root.querySelector('#a-login-pin'),loginError=root.querySelector('.a-error');
       root.querySelectorAll('[data-login-mode]').forEach(button=>button.addEventListener('click',()=>{loginMode=button.dataset.loginMode;root.querySelectorAll('[data-login-mode]').forEach(item=>item.setAttribute('aria-pressed',String(item===button)));loginError.textContent='';userSearch.focus()}));
-      userSearch.addEventListener('input',()=>{selectedUser=userSearch.value.trim();loginError.textContent=''});
+      function selectAccount(name){selectedUser=name;userSearch.value=name;suggestions.classList.remove('visible');loginError.textContent='';if(loginPin.value.length===4)attemptLogin();else loginPin.focus()}
+      async function searchAccounts(){
+        selectedUser='';
+        const prefix=userSearch.value.trim();
+        if(prefix.length<3){suggestions.classList.remove('visible');suggestions.innerHTML='';loginError.textContent='Scrivi almeno 3 lettere.';return}
+        if(loginPin.value.length!==4){suggestions.classList.remove('visible');loginError.textContent='Inserisci anche il PIN personale.';return}
+        loginError.textContent='Ricerca del nome…';
+        try{
+          const data=await authRequest({action:'search',prefix,pin:loginPin.value});
+          const matches=data.names||[];
+          if(matches.length===1){selectAccount(matches[0]);return}
+          loginError.textContent=matches.length?'Seleziona il tuo nome.':'Nome o PIN non corretto.';
+          suggestions.innerHTML=matches.map(name=>`<button type="button" data-account="${name}" role="option">${name}</button>`).join('');
+          suggestions.classList.toggle('visible',matches.length>0);
+          suggestions.querySelectorAll('[data-account]').forEach(button=>button.addEventListener('click',()=>selectAccount(button.dataset.account)));
+        }catch(error){suggestions.classList.remove('visible');loginError.textContent=error.message}
+      }
+      userSearch.addEventListener('input',()=>{selectedUser='';clearTimeout(searchTimer);searchTimer=setTimeout(searchAccounts,250)});
       async function attemptLogin(){
-        selectedUser=userSearch.value.trim();
-        if(selectedUser.length<2){loginError.textContent='Inserisci il tuo nome completo.';loginPin.value='';return}
+        if(!selectedUser){searchAccounts();return}
         loginError.textContent='Verifica accesso…';
         try{const data=await authRequest({action:'login',name:selectedUser,pin:loginPin.value});sessionToken=data.token;currentAuth=data.user;sessionStorage.setItem('ig_staff_token',sessionToken);const authenticated=data.user.name;loginPin.value='';userSearch.value='';selectedUser='';if(loginMode==='clock'){showClock(authenticated)}else{setUser(authenticated);login.style.display='none';app.classList.add('visible')}}catch(error){loginPin.value='';loginError.textContent=error.message}
       }
-      loginPin.addEventListener('input',()=>{loginPin.value=loginPin.value.replace(/\D/g,'').slice(0,4);if(loginPin.value.length===4)attemptLogin()});
-      loginForm.addEventListener('submit',e=>{e.preventDefault();if(loginPin.value.length===4)attemptLogin()});
+      loginPin.addEventListener('input',()=>{loginPin.value=loginPin.value.replace(/\D/g,'').slice(0,4);if(loginPin.value.length===4){if(selectedUser)attemptLogin();else searchAccounts()}});
+      loginForm.addEventListener('submit',e=>{e.preventDefault();if(loginPin.value.length===4){if(selectedUser)attemptLogin();else searchAccounts()}});
       const clockScreen=root.querySelector('.a-clock-screen'),punchButton=root.querySelector('.a-punch');
       const currentTime=()=>new Intl.DateTimeFormat('it-IT',{timeZone:'Europe/Rome',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date());
       function minutesOf(time){const [h,m]=time.split(':').map(Number);return h*60+m}
