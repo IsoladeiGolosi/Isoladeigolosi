@@ -343,9 +343,9 @@
     (()=>{
       const root=document.getElementById('gestionale-pin-reale');
       const icons={
-        'layout-dashboard':'▦','scan-line':'◉','bell-ring':'♢','calendar-days':'▤',
+        'layout-dashboard':'▦','scan-line':'◉','bell-ring':'🍫','calendar-days':'▤',
         'calendar-arrow-down':'→','history':'◷','user-round':'●','menu':'☰',
-        'bell':'♢','log-out':'↪','sheet':'▤','x':'×','file-output':'⇧'
+        'bell':'🍫','log-out':'↪','sheet':'▤','x':'×','file-output':'⇧'
       };
       root.querySelectorAll('i[data-lucide]').forEach(icon=>{icon.textContent=icons[icon.dataset.lucide]||'•'});
       const login=root.querySelector('.a-login'),app=root.querySelector('.a-app'),loginForm=root.querySelector('.a-login-panel');
